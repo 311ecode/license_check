@@ -9,6 +9,7 @@ licence_check_testAll() {
     "testLicenseCheckMultiFile"
     "testLicenseCheck"
     "testLicenseCheckOverwrite"
+    "testLicenseCheckRepeatedExecution"
   )
   
   local ignored_suites=(

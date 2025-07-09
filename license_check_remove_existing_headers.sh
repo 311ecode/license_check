@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 # Copyright © 2025 Imre Toth <tothimre@gmail.com> - Proprietary Software. See LICENSE file for terms.
+
 license_check_remove_existing_headers() {
     local file="$1"
     
     # Create a temporary file to store cleaned content
     local temp_file=$(mktemp)
-    local in_header=false
-    local shebang_preserved=false
+    local shebang_line=""
+    local content_started=false
+    local skip_empty_lines=true
     
+    # First pass: extract shebang if present
+    local first_line=$(head -n 1 "$file" 2>/dev/null)
+    if [[ "$first_line" == "#!/"* ]]; then
+        shebang_line="$first_line"
+        echo "$shebang_line" >> "$temp_file"
+    fi
+    
+    # Second pass: process the rest of the file
     while IFS= read -r line || [[ -n "$line" ]]; do
-        # Preserve shebang line
-        if [[ "$line" == "#!/"* ]] && [[ "$shebang_preserved" == false ]]; then
-            echo "$line" >> "$temp_file"
-            shebang_preserved=true
+        # Skip shebang line if we already processed it
+        if [[ "$line" == "#!/"* ]] && [[ -n "$shebang_line" ]]; then
             continue
         fi
         
@@ -27,19 +35,24 @@ license_check_remove_existing_headers() {
             continue
         fi
         
-        # If we hit a non-comment line or empty line after potential headers, we're done with header section
-        if [[ ! "$line" =~ ^[[:space:]]*# ]] && [[ ! "$line" =~ ^[[:space:]]*// ]] && [[ -n "$line" ]]; then
-            echo "$line" >> "$temp_file"
-            # Copy the rest of the file
-            cat >> "$temp_file"
-            break
-        elif [[ -z "$line" ]]; then
-            # Empty line - could be end of header section
-            echo "$line" >> "$temp_file"
-        else
-            # Non-license comment line
-            echo "$line" >> "$temp_file"
+        # Handle empty lines - skip them until we find actual content
+        if [[ -z "$line" ]]; then
+            if [[ "$content_started" == true ]]; then
+                # Content has started, preserve empty lines
+                echo "$line" >> "$temp_file"
+            fi
+            # If content hasn't started, skip empty lines to avoid accumulation
+            continue
         fi
+        
+        # This is actual content (not header, not empty)
+        content_started=true
+        skip_empty_lines=false
+        echo "$line" >> "$temp_file"
+        
+        # Copy the rest of the file efficiently
+        cat >> "$temp_file"
+        break
     done < "$file"
     
     # Replace original file with cleaned version
