@@ -10,6 +10,8 @@ licence_check_testAll() {
     "testLicenseCheck"
     "testLicenseCheckOverwrite"
     "testLicenseCheckRepeatedExecution"
+    "testLicenseCheckChangeScenarios"
+    "testLicenseCheckEmptyLine"
   )
   
   local ignored_suites=(

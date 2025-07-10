@@ -61,10 +61,11 @@ const Test = () => null;" > component.tsx
         else
             echo "✅ PASS: $file has license header" >&2
             
-            # Verify correct comment style was used with debug info
+            # Verify correct comment style was used and empty line separator exists
             case "$file" in
                 script.sh|file_without_extension)
                     local second_line=$(sed -n '2p' "$file")
+                    local third_line=$(sed -n '3p' "$file")
                     if [[ "$second_line" =~ ^\#\ Test\ Copyright\ Header ]]; then
                         echo "✅ PASS: $file has correct comment placement after shebang" >&2
                     else
@@ -72,9 +73,17 @@ const Test = () => null;" > component.tsx
                         echo "🐛 DEBUG: Second line is: '$second_line'" >&2
                         all_ok=false
                     fi
+                    if [[ -z "$third_line" ]]; then
+                        echo "✅ PASS: $file has mandatory empty line after license" >&2
+                    else
+                        echo "❌ FAIL: $file missing mandatory empty line after license" >&2
+                        echo "🐛 DEBUG: Third line is: '$third_line'" >&2
+                        all_ok=false
+                    fi
                     ;;
                 *.js|*.tsx|*.go)
                     local first_line=$(head -n 1 "$file")
+                    local second_line=$(sed -n '2p' "$file")
                     if [[ "$first_line" =~ ^\/\/\ Test\ Copyright\ Header ]]; then
                         echo "✅ PASS: $file has correct // comment style" >&2
                     else
@@ -82,14 +91,29 @@ const Test = () => null;" > component.tsx
                         echo "🐛 DEBUG: First line is: '$first_line'" >&2
                         all_ok=false
                     fi
+                    if [[ -z "$second_line" ]]; then
+                        echo "✅ PASS: $file has mandatory empty line after license" >&2
+                    else
+                        echo "❌ FAIL: $file missing mandatory empty line after license" >&2
+                        echo "🐛 DEBUG: Second line is: '$second_line'" >&2
+                        all_ok=false
+                    fi
                     ;;
                 *.py)
                     local first_line=$(head -n 1 "$file")
+                    local second_line=$(sed -n '2p' "$file")
                     if [[ "$first_line" =~ ^\#\ Test\ Copyright\ Header ]]; then
                         echo "✅ PASS: $file has correct # comment style" >&2
                     else
                         echo "❌ FAIL: $file has wrong comment style" >&2
                         echo "🐛 DEBUG: First line is: '$first_line'" >&2
+                        all_ok=false
+                    fi
+                    if [[ -z "$second_line" ]]; then
+                        echo "✅ PASS: $file has mandatory empty line after license" >&2
+                    else
+                        echo "❌ FAIL: $file missing mandatory empty line after license" >&2
+                        echo "🐛 DEBUG: Second line is: '$second_line'" >&2
                         all_ok=false
                     fi
                     ;;

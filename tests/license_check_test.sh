@@ -81,6 +81,32 @@ testLicenseCheck() {
         else
             echo "✅ PASS: $file has license header" >&2
         fi
+        
+        # Verify empty line separator exists
+        case "$file" in
+            test.sh)
+                # Shebang files should have empty line at position 3
+                local third_line=$(sed -n '3p' "$file")
+                if [[ -z "$third_line" ]]; then
+                    echo "✅ PASS: $file has empty line separator" >&2
+                else
+                    echo "❌ FAIL: $file missing empty line separator" >&2
+                    echo "ℹ️  Third line: '$third_line'" >&2
+                    all_ok=false
+                fi
+                ;;
+            *)
+                # Non-shebang files should have empty line at position 2
+                local second_line=$(sed -n '2p' "$file")
+                if [[ -z "$second_line" ]]; then
+                    echo "✅ PASS: $file has empty line separator" >&2
+                else
+                    echo "❌ FAIL: $file missing empty line separator" >&2
+                    echo "ℹ️  Second line: '$second_line'" >&2
+                    all_ok=false
+                fi
+                ;;
+        esac
     done
 
     if [ "$all_ok" = false ]; then

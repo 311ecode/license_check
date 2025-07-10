@@ -143,9 +143,9 @@ export default TestComponent;" > typescript_file.tsx
             echo "✅ PASS: $file content consistent across all iterations" >&2
         fi
         
-        # Check line count stability (should be original + 1 for header)
+        # Check line count stability (should be original + 2 for header + empty line)
         local final_line_count=${iteration_line_counts["${file}_${iterations}"]}
-        local expected_line_count=$((original_line_counts["$file"] + 1))
+        local expected_line_count=$((original_line_counts["$file"] + 2))
         
         if [ "$final_line_count" -eq "$expected_line_count" ]; then
             echo "✅ PASS: $file has correct line count ($final_line_count)" >&2
@@ -154,22 +154,22 @@ export default TestComponent;" > typescript_file.tsx
             all_ok=false
         fi
         
-        # Verify no extra blank lines at the beginning
-        local line_after_header=""
+        # Verify mandatory empty line after header
+        local empty_line_after_header=""
         case "$file" in
             script_with_shebang.sh)
-                line_after_header=$(sed -n '3p' "$file")
+                empty_line_after_header=$(sed -n '3p' "$file")
                 ;;
             *)
-                line_after_header=$(sed -n '2p' "$file")
+                empty_line_after_header=$(sed -n '2p' "$file")
                 ;;
         esac
         
-        if [[ -n "$line_after_header" ]]; then
-            echo "✅ PASS: $file has no extra blank lines after header" >&2
+        if [[ -z "$empty_line_after_header" ]]; then
+            echo "✅ PASS: $file has mandatory empty line after header" >&2
         else
-            echo "❌ FAIL: $file has extra blank line after header" >&2
-            echo "🐛 DEBUG: Line after header: '$line_after_header'" >&2
+            echo "❌ FAIL: $file missing mandatory empty line after header" >&2
+            echo "🐛 DEBUG: Line after header: '$empty_line_after_header'" >&2
             all_ok=false
         fi
         
