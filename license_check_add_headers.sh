@@ -15,17 +15,16 @@ license_check_add_header() {
     local first_line=$(head -n 1 "$file" 2>/dev/null)
     [[ "$DEBUG" ]] && echo "🐛 DEBUG: First line: '$first_line'" >&2
     
-    # Determine if this should be treated as a shebang file based on BOTH shebang presence AND file extension
-    local has_valid_shebang=false
+    # Determine if this should be treated as a shebang file based on shebang presence
+    local has_bash_shebang=false
     if [[ "$first_line" == "#!/usr/bin/env bash"* ]] || [[ "$first_line" == "#!/bin/bash"* ]]; then
-        # Only treat as shebang file if it's a shell file or has no extension
-        if [[ "$extension" == "sh" ]] || [[ "$extension" == "bash" ]] || [[ "$file" != *.* ]]; then
-            has_valid_shebang=true
-        fi
+        has_bash_shebang=true
+        [[ "$DEBUG" ]] && echo "🐛 DEBUG: File has bash shebang" >&2
     fi
     
-    if [[ "$has_valid_shebang" == true ]]; then
-        [[ "$DEBUG" ]] && echo "🐛 DEBUG: File has valid shebang for shell - using shebang logic" >&2
+    # For files with bash shebang, always use shebang logic regardless of extension
+    if [[ "$has_bash_shebang" == true ]]; then
+        [[ "$DEBUG" ]] && echo "🐛 DEBUG: File has bash shebang - using shebang logic" >&2
         # For files with shebang: add license after line 1, then add empty line after license
         [[ "$DEBUG" ]] && echo "🐛 DEBUG: Adding license after line 1: '# $LICENSE_HEADER'" >&2
         sed -i "1a\\# $LICENSE_HEADER" "$file"
@@ -47,7 +46,7 @@ license_check_add_header() {
         return
     fi
 
-    [[ "$DEBUG" ]] && echo "🐛 DEBUG: File has no valid shebang or inappropriate shebang - using extension-based logic" >&2
+    [[ "$DEBUG" ]] && echo "🐛 DEBUG: File has no bash shebang - using extension-based logic" >&2
     case "$extension" in
         js|ts|jsx|tsx|go)
             [[ "$DEBUG" ]] && echo "🐛 DEBUG: Using // comment style for $extension files" >&2

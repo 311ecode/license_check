@@ -59,10 +59,24 @@ testLicenseCheck() {
         "module.go"
     )
     
-    # Create test files with some content
+    # Create test files with appropriate content for each type
+    echo "#!/usr/bin/env bash
+echo 'Sample bash content'" > test.sh
+    echo "// JavaScript module
+function hello() {
+    console.log('Hello');
+}" > script.js
+    echo "import React from 'react';
+const Component = () => {
+    return <div>Hello</div>;
+};" > component.tsx
+    echo "package main
+import \"fmt\"
+func main() {
+    fmt.Println(\"Hello\")
+}" > module.go
+
     for file in "${test_files[@]}"; do
-        echo "#!/usr/bin/env bash" > "$file"
-        echo "// Sample content" >> "$file"
         echo "Created test file: $file" >&2
     done
 
