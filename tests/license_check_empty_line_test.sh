@@ -3,11 +3,13 @@
 
 testLicenseCheckEmptyLine() {
   local initial_dir=$(pwd)
-  trap 'cd "$initial_dir"' EXIT
-
+  local test_dir=$(mktemp -d -t license-empty-line-test-XXXXXXXXXX)
+  
+  # Improved cleanup trap that handles both directory change AND temp dir removal
+  trap 'cd "$initial_dir"; rm -rf "$test_dir"' EXIT
+  
   # Setup
   echo "🛠️  Setting up test environment for empty line separator..." >&2
-  local test_dir=$(mktemp -d -t license-empty-line-test-XXXXXXXXXX)
   cd "$test_dir" || return 1
   echo "📁 Test directory: $test_dir" >&2
 
@@ -222,12 +224,11 @@ func main() {
     fi
   done
 
-  # Cleanup
+  # Final explicit cleanup message (trap will handle actual cleanup)
   echo "🧹 Cleaning up test environment..." >&2
-  cd "$initial_dir" && rm -rf "$test_dir"
-
+  
   if [ "$all_ok" = true ]; then
-    echo "🎉 All empty line separator tests passed successfully!" >&RetryITContinueEdit2
+    echo "🎉 All empty line separator tests passed successfully!" >&2
     return 0
   else
     echo "💥 Some empty line separator tests failed" >&2
