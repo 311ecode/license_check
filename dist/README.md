@@ -1,120 +1,67 @@
 # License Check Tool
 
-A bash script to automatically add license headers to source code files in a project.
+A bash script to automatically add or update license headers across your project while preserving original source code.
 
 ## Usage
 
 ```bash
 license_check
-No parameters are required. The script will:
 
-Check that it's being run from the project root (where .git exists)
-Verify the presence of required license files (LICENSE and license.small)
-Process all supported files to add license headers
-
-For help, use:
-bashlicense_check.sh -h
-# or
-license_check.sh --help
 ```
 
-Supported File Types
-The tool automatically handles these file types with appropriate comment styles:
+No parameters are required. The script will:
 
-Shell scripts (.sh, .bash)
-JavaScript/TypeScript (.js, .ts, .jsx, .tsx)
-Go (.go)
-Python (.py)
-Files with bash shebang (regardless of extension)
+1. **Validate**: Ensure it's running from a Git project root.
+2. **Verify**: Check for `LICENSE` and `license.small` files.
+3. **Process**: Scan and update headers for all supported file types.
 
-Requirements
+For help, use:
 
-Must be run from project root directory (contains .git)
-These files must exist in project root:
+```bash
+license_check.sh -h
+# or
+license_check.sh --help
 
-LICENSE (full license text)
-license.small (short header version)
+```
 
+## Supported File Types
 
+The tool uses specific comment styles based on file type:
 
-License Header Format
-The tool adds license headers with the following structure:
-For files with shebang:
-bash#!/usr/bin/env bash
-# Copyright © 2025 Company Name - License Text
+* **Double Slash (`//`)**: `.js`, `.ts`, `.jsx`, `.tsx`, `.go`
+* **Hash (`#`)**: `.sh`, `.bash`, `.py`
+* **Shebang Detection**: Any file starting with `#!` (e.g., scripts without extensions) will have the license placed on the second line.
 
-# Original file content starts here
-echo "Hello World"
-For files without shebang:
-javascript// Copyright © 2025 Company Name - License Text
+## Requirements
 
-// Original file content starts here
-function hello() {
-    console.log("Hello World");
-}
-Important: The tool automatically adds a mandatory empty line after each license header to clearly separate the license from the original file content. This ensures clean formatting and reliable header detection during updates.
-How It Works
-
-Project Validation:
-
-Checks for .git directory to confirm project root
-Verifies existence of required license files
-
-
-Header Processing:
-
-Reads the license header from license.small
-Processes all supported files:
-
-Removes any existing license headers (including the separator empty line)
-Adds new header in appropriate comment style
-Adds mandatory empty line separator after header
-Special handling for files with shebang lines
+* **Environment**: Bash environment with `sed`, `find`, and `grep`.
+* **Project Root**: Must contain a `.git` directory.
+* **Mandatory Files**:
+* `LICENSE`: The full legal text.
+* `license.small`: A single-line or short version used for the file headers.
 
 
 
+## How It Works
 
-Comment Styles:
+### 1. Cleaning & Idempotency
 
-// for JavaScript/TypeScript/Go
-# for Shell/Python
-Automatically detects shebang lines for proper placement
+Before adding a new header, the tool runs a removal pass. It detects existing headers using keywords like `Copyright`, `License`, `Proprietary`, and the `©` symbol. This ensures that re-running the tool never results in duplicate headers.
 
+### 2. Header Placement
 
-Header Updates:
+* **Standard Files**: The header is inserted at line 1.
+* **Shebang Files**: The header is inserted at line 2, immediately following the interpreter directive.
 
-Running the tool multiple times is safe and will not create duplicates
-Changing the license.small file and re-running will update all headers
-Original file content is always preserved
+### 3. Formatting
 
+The tool enforces a **mandatory empty line** after every license header. This separates the legal metadata from the functional code, improving readability and making future parsing more reliable.
 
+## Testing
 
-Examples
-Adding headers to all files:
-bashlicense_check
-Before:
-bash#!/usr/bin/env bash
-echo "Hello World"
-After:
-bash#!/usr/bin/env bash
-# Copyright © 2025 Your Company - MIT License
+The project includes a comprehensive test suite via `licence_check_testAll.sh`, covering:
 
-echo "Hello World"
-Testing
-The project includes comprehensive tests:
-bashlicence_check_testAll
-Tests cover:
-
-Basic functionality across multiple file types
-License header overwriting and updates
-Repeated execution stability
-Complex license change scenarios
-Empty line separator handling
-
-Implementation Notes
-
-The tool is implemented purely in bash for maximum compatibility
-Uses find+grep for efficient file processing
-Handles edge cases like files with shebang but no extension
-Mandatory empty line separator ensures clean formatting and reliable parsing
-Safe for repeated execution - will not accumulate headers or extra spacing
+* Multi-file processing
+* Overwriting existing headers
+* Repeated execution stability
+* Preservation of shebangs and original content
