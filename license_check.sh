@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Copyright © 2025 Imre Toth <tothimre@gmail.com> - Proprietary Software. See LICENSE file for terms.
+# Copyright 2025 Imre Toth <tothimre@gmail.com> - Licensed under the Apache License, Version 2.0. See LICENSE file for terms.
 
 license_check() {
+  command -v markdown-show-help-registration &>/dev/null && eval "$(markdown-show-help-registration --minimum-parameters 0)"
   # 1. Find the root using findUp logic and CD there
   license_check_project_root
   
